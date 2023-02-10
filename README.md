@@ -3,7 +3,9 @@
 Flutter project to create a kanban board(Task tracking tool)
 
 Root directory: kanban_ui/lib
-   folder and its uses:
+   
+Folder and its uses:
+       
        1. main.dart -> entry point to application
        2. /bloc -> contains Bloc file, Event and state classes of app.
        3. /model -> contains all POJO classes
@@ -11,10 +13,12 @@ Root directory: kanban_ui/lib
        5. /repository -> handle the data from network and passes it to the bloc.
        6. /utils -> Utility classes
        7. /widget -> Widget classes
-   To run:
-        flutter run 
-   To generate Apk
-        "flutter build apk" or "flutter build apk --split-per--abi" (For small size apk from difference architecture)      
+To run:
+   flutter run 
+
+To generate Apk:
+   "flutter build apk" or "flutter build apk --split-per--abi" (For small size apk from difference architecture)      
+
 Additonal technical details:
    Flutter 3.7.0
    Dart 2.19.0
