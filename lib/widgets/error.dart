@@ -72,15 +72,7 @@ class ErrorView extends StatelessWidget {
                   0.7),
           SizedBox(height: 20),
           if (onRetryPressed != null)
-            ElevatedButton(
-              //color: Colors.white,
-              style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.resolveWith((states) {
-                    if (states.contains(MaterialState.pressed)) {
-                      return Colors.green;
-                    }
-                    return Colors.white;
-                  })),
+            FilledButton(
               child: Text(buttonText != null ? buttonText : 'Retry',
                   style: TextStyle(color: Colors.black)),
               onPressed: onRetryPressed,
