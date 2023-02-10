@@ -52,7 +52,7 @@ class MyApp extends StatelessWidget {
         )
       ],
       child: MaterialApp(
-          title: 'Flutter Demo',
+          title: 'Kanban Board',
           theme: ThemeData(
             primarySwatch: Colors.blue,
           ),
@@ -76,7 +76,6 @@ class MyCustomScrollBehavior extends MaterialScrollBehavior {
         // etc.
       };
 }
-
 
 class SimpleAppBlocObserver extends BlocObserver {
   @override

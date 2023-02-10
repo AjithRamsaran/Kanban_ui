@@ -264,9 +264,13 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                                                                 .text
                                                                 .isNotEmpty) {
                                                               focusNew = false;
-                                                              if (FocusScope.of(context).isFirstFocus) {
-                                                                FocusScope.of(context)
-                                                                    .requestFocus(new FocusNode());
+                                                              if (FocusScope.of(
+                                                                      context)
+                                                                  .isFirstFocus) {
+                                                                FocusScope.of(
+                                                                        context)
+                                                                    .requestFocus(
+                                                                        new FocusNode());
                                                               }
                                                               context
                                                                   .read<
@@ -417,9 +421,13 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                                                                         MaterialStateProperty.all(
                                                                             Colors.green)),
                                                                 onPressed: () {
-                                                                  if (FocusScope.of(context).isFirstFocus) {
-                                                                    FocusScope.of(context)
-                                                                        .requestFocus(new FocusNode());
+                                                                  if (FocusScope.of(
+                                                                          context)
+                                                                      .isFirstFocus) {
+                                                                    FocusScope.of(
+                                                                            context)
+                                                                        .requestFocus(
+                                                                            new FocusNode());
                                                                   }
                                                                   if (editingControllerForDescription
                                                                       .text
@@ -723,66 +731,6 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                                                     buildDraggableWidgetForDragTarget(
                                                         index,
                                                         dataL?.elementAt(index))
-                                                    /*SingleChildScrollView(
-                                                      child: Container(
-                                                        alignment: Alignment
-                                                            .centerLeft,
-                                                        child: Wrap(
-                                                          alignment:
-                                                              WrapAlignment
-                                                                  .start,
-                                                          spacing: 4,
-                                                          direction:
-                                                              Axis.horizontal,
-                                                          children: [
-                                                            ...?dataL
-                                                                ?.elementAt(
-                                                                    index)
-                                                                .tags
-                                                                ?.map((e) =>
-                                                                    Container(
-                                                                      decoration: BoxDecoration(
-                                                                          color: Colors
-                                                                              .white,
-                                                                          borderRadius: BorderRadius.circular(
-                                                                              4.0),
-                                                                          border:
-                                                                              Border.all(color: ColorUtil.btnColorMap[e.color] ?? Colors.grey)),
-                                                                      padding:
-                                                                          EdgeInsets.all(
-                                                                              4),
-                                                                      margin: EdgeInsets.symmetric(
-                                                                          vertical:
-                                                                              2,
-                                                                          horizontal:
-                                                                              8),
-                                                                      child:
-                                                                          Text(
-                                                                        '${e.name}',
-                                                                        style: TextStyle(
-                                                                            color:
-                                                                                ColorUtil.btnColorMap[e.color]), //Colors.black),//
-                                                                      ),
-                                                                    ))
-                                                                .toList()
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    Padding(
-                                                      padding:
-                                                          const EdgeInsets.all(
-                                                              8.0),
-                                                      child: Text(
-                                                        dataL
-                                                                ?.elementAt(
-                                                                    index)
-                                                                .name ??
-                                                            "",
-                                                        style: TextStyle(
-                                                            fontSize: 20),
-                                                      ),
-                                                    ),*/
                                                   ],
                                                 ),
                                               ),
@@ -802,9 +750,19 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                                       if (list[index].taskIds?.contains(data) ??
                                           false) {
                                         list[index].taskIds?.remove(data);
-                                        list[index]
-                                            .taskIds
-                                            ?.insert(childIndex, data as Task);
+                                        if (childIndex >=
+                                            (list[index]
+                                                    .taskIds
+                                                    ?.length
+                                                    .toInt() ??
+                                                0)) {
+                                          list[index]
+                                              .taskIds
+                                              ?.add(data as Task);
+                                        } else {
+                                          list[index].taskIds?.insert(
+                                              childIndex, data as Task);
+                                        }
                                       } else {
                                         list[index]
                                             .taskIds
@@ -897,9 +855,23 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                                       if (list[index].taskIds?.contains(data) ??
                                           false) {
                                         list[index].taskIds?.remove(data);
-                                        list[index]
+
+                                        if (childIndex >=
+                                            (list[index]
+                                                    .taskIds
+                                                    ?.length
+                                                    .toInt() ??
+                                                0)) {
+                                          list[index]
+                                              .taskIds
+                                              ?.add(data as Task);
+                                        } else {
+                                          list[index].taskIds?.insert(
+                                              childIndex, data as Task);
+                                        }
+                                        /*list[index]
                                             .taskIds
-                                            ?.insert(childIndex, data as Task);
+                                            ?.insert(childIndex, data as Task);*/
                                       } else {
                                         list[index]
                                             .taskIds
