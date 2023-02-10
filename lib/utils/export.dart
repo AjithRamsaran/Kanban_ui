@@ -24,7 +24,7 @@ class Export {
     } else if (Platform.isIOS) {
       baseDir = (await getApplicationDocumentsDirectory());
     }
-    print("File path: " + (baseDir?.path ?? ""));
+    //print("File path: " + (baseDir?.path ?? ""));
     var status = await Permission.storage.status;
     if (!status.isGranted) {
       await Permission.storage.request();
@@ -32,7 +32,7 @@ class Export {
     var dirToBeCreated = "Kanban";
     String finalDir = join(baseDir?.path ?? "", dirToBeCreated);
     var directory = Directory(finalDir);
-    print(directory.path);
+    //print(directory.path);
     if (directory != null) {
       if (!(await directory.exists())) {
         await directory.create();
@@ -42,7 +42,7 @@ class Export {
     String dir = (await getExternalStorageDirectory())?.absolute.path ??
         (await getApplicationDocumentsDirectory()).absolute.path;
     var file = "$dir";
-    print(" FILE " + file);
+    //print(" FILE " + file);
     DateTime dateTime = DateTime.now();
     String fileName = "/KanbanBoard${dateTime.millisecond}.csv";
     File f = File(directory.path + fileName);
@@ -137,7 +137,7 @@ class Export {
     try {
       OpenFile.open(directory.path + fileName);
     } catch (e) {
-      print("Error : " + e.toString());
+      //print("Error : " + e.toString());
     }
     return directory.path + fileName;
   }

@@ -39,7 +39,7 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
           boards: await kanbanRepository.getBoards(),
           tags: await kanbanRepository.getTags(),
           users: await kanbanRepository.getUsers()));
-      print(state.users);
+      //print(state.users);
     } catch (e) {
       emit(state.copyWith(status: OperationStatus.failure, boards: []));
     }

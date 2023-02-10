@@ -56,8 +56,8 @@ class KanbanApi {
   Future<dynamic> apiPostGetter(String body1) async {
     var responseJson;
     try {
-      print(_getterBaseUrl);
-      print(body1);
+      //print(_getterBaseUrl);
+      //print(body1);
       final response = await http.post(
         Uri.parse(_getterBaseUrl),
         body: body1,
@@ -72,8 +72,8 @@ class KanbanApi {
   Future<dynamic> apiPostSetter(String body1) async {
     var responseJson;
     try {
-      print(_setterBaseUrl);
-      log(body1);
+      //print(_setterBaseUrl);
+      //log(body1);
 
       final response = await http.post(Uri.parse(_setterBaseUrl), body: body1);
       responseJson = _response(response);
@@ -91,21 +91,21 @@ class KanbanApi {
       case 201:
       case 504:
         var responseJson = json.decode(response.body.toString());
-        print(responseJson);
+        //print(responseJson);
         return responseJson;
       case 400:
         var responseJson = json.decode(response.body.toString());
-        print(responseJson);
+        //print(responseJson);
         return responseJson;
       //throw BadRequestException(response.body.toString());
       case 401:
       case 403:
         var responseJson = json.decode(response.body.toString());
-        print(responseJson);
+        //print(responseJson);
         return responseJson;
       case 500:
         var responseJson = json.decode(response.body.toString());
-        print(responseJson);
+        //print(responseJson);
         return responseJson;
       default:
         throw FetchDataException(
