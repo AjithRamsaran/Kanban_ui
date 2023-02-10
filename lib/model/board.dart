@@ -4,6 +4,7 @@ import 'package:kanban_ui/model/task.dart';
 /// title : "Board title"
 /// tasks : [{"id":1}]
 
+/*
 class Board {
   late int _id;
   late String _title;
@@ -42,3 +43,4 @@ class Board {
     return map;
   }
 }
+*/

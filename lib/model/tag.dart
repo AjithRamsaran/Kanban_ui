@@ -6,6 +6,7 @@ import 'package:equatable/equatable.dart';
 /// name : "Tag name"
 /// color : "Color"
 
+/*
 class Tag extends Equatable{
   late int id;
   late String name;
@@ -32,4 +33,4 @@ class Tag extends Equatable{
 
   @override
   List<Object?> get props => [id,name,color];
-}
+}*/

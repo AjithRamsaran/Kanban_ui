@@ -7,7 +7,7 @@ import 'package:equatable/equatable.dart';
 /// phoneNumber : "842805696965"
 /// countryCode : "91"
 
-class User extends Equatable {
+class User1 extends Equatable {
   late int id;
   late String name;
   late String title;
@@ -15,7 +15,7 @@ class User extends Equatable {
   String? phoneNumber;
   String? countryCode;
 
-  User(
+  User1(
       {required this.id,
       required this.name,
       required this.title,
@@ -23,7 +23,7 @@ class User extends Equatable {
       this.phoneNumber,
       this.countryCode});
 
-  User.fromJson(dynamic json) {
+  User1.fromJson(dynamic json) {
     id = json["id"] ?? 0;
     name = json["name"] ?? "";
     title = json["title"] ?? "";
@@ -43,7 +43,11 @@ class User extends Equatable {
     return map;
   }
 
+
+
   @override
   // TODO: implement props
   List<Object?> get props => [id, name, title, email, phoneNumber, countryCode];
+
+
 }

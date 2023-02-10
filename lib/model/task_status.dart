@@ -4,7 +4,7 @@ import 'package:equatable/equatable.dart';
 /// name : "Task status"
 
 class TaskStatus extends Equatable{
-  late int id;
+  late num id;
   late String status;
   late String createdAt;
   String? endAt;
