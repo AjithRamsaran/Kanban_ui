@@ -49,7 +49,7 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
   final ScrollController scrollController = ScrollController();
 
   TextEditingController editingControllerForDescription =
-  TextEditingController();
+      TextEditingController();
   TextEditingController editingControllerForAddBoard = TextEditingController();
 
   List<TextEditingController> editingController = [];
@@ -75,205 +75,209 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
     return Scaffold(
         body: SafeArea(
             child: Stack(
-              children: [
-                Image.asset(
-                  'assets/background_image.png',
-                  height: MediaQuery.of(context).size.height,
-                  width: MediaQuery.of(context).size.width,
-                  fit: BoxFit.cover,
-                ),
-                GestureDetector(
-                  onTap: () {
-                    if (FocusScope.of(context).isFirstFocus) {
-                      FocusScope.of(context).requestFocus(new FocusNode());
+      children: [
+        Image.asset(
+          'assets/background_image.png',
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+          fit: BoxFit.cover,
+        ),
+        GestureDetector(
+          onTap: () {
+            if (FocusScope.of(context).isFirstFocus) {
+              FocusScope.of(context).requestFocus(new FocusNode());
+            }
+          },
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Expanded(
+                child: Listener(
+                  onPointerMove: (PointerMoveEvent event) {
+                    if (!isDragging) {
+                      return;
+                    }
+                    RenderBox render = listViewKey.currentContext
+                        ?.findRenderObject() as RenderBox;
+                    Offset position = render.localToGlobal(Offset.zero);
+                    double startX = position.dx; // start position of the widget
+                    double endX = startX +
+                        render.size.width; // end position of the widget
+
+                    double detectedRange = (endX - startX) / 5;
+                    var moveDistance =
+                        (Platform.isAndroid || Platform.isIOS) ? 10 : 20;
+                    if (event.position.dx < startX + detectedRange) {
+                      // code to scroll up
+                      var to = scrollController.offset - moveDistance;
+                      to = (to < 0) ? 0 : to;
+                      scrollController.jumpTo(to);
+                    }
+                    if (event.position.dx > endX - detectedRange) {
+                      // code to scroll down
+                      scrollController
+                          .jumpTo(scrollController.offset + moveDistance);
                     }
                   },
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Expanded(
-                        child: Listener(
-                          onPointerMove: (PointerMoveEvent event) {
-                            if (!isDragging) {
-                              return;
-                            }
-                            RenderBox render = listViewKey.currentContext
-                                ?.findRenderObject() as RenderBox;
-                            Offset position = render.localToGlobal(Offset.zero);
-                            double startX = position.dx; // start position of the widget
-                            double endX = startX +
-                                render.size.width; // end position of the widget
+                  child: BlocListener<BoardBloc, BoardState>(
+                    listener: (context, state) {
+                      if (state.operationStatus == OperationStatus.success ||
+                          state.operationStatus == OperationStatus.loading) {
+                        list = state.boards ?? [];
+                        /*  list.add(Board(id: 0, title: "", tasks: []));*/
+                        editingController = [];
+                        editingController = List.generate(
+                            (state.boards?.length ?? 0) /*+ 1*/,
+                            (index) => TextEditingController());
+                        focusTask = List.generate(
+                            (state.boards?.length ?? 0) /* + 1*/,
+                            (index) => false);
+                        listScroll = List.generate(
+                            (state.boards?.length ?? 0) /*+ 1*/,
+                            (index) => ScrollController());
+                        flag = List.generate(
+                            (state.boards?.length ?? 0) /*+ 1*/,
+                            (index) => false);
+                        dataL = List.generate(
+                            (state.boards?.length ?? 0) /*+ 1*/,
+                            (index) => Task(
+                                id: 1000 + index,
+                                description: editingController[index].text,
+                                users: [],
+                                createdAt: DateTime.now().toString()));
+                        focusNew = false;
+                        editingControllerForDescription.text = '';
+                      } else {
+                        list = [];
+                        editingController = [];
+                        focusTask = [];
+                        listScroll = [];
+                        flag = [];
+                        dataL = [];
+                        _isAddboardEnd = false;
+                        focusNew = false;
+                        editingControllerForDescription.text = '';
+                      }
 
-                            double detectedRange = (endX - startX) / 5;
-                            var moveDistance =
-                            (Platform.isAndroid || Platform.isIOS) ? 10 : 20;
-                            if (event.position.dx < startX + detectedRange) {
-                              // code to scroll up
-                              var to = scrollController.offset - moveDistance;
-                              to = (to < 0) ? 0 : to;
-                              scrollController.jumpTo(to);
-                            }
-                            if (event.position.dx > endX - detectedRange) {
-                              // code to scroll down
-                              scrollController
-                                  .jumpTo(scrollController.offset + moveDistance);
-                            }
-                          },
-                          child: BlocListener<BoardBloc, BoardState>(
-                            listener: (context, state) {
-                              if (state.operationStatus == OperationStatus.success ||
-                                  state.operationStatus == OperationStatus.loading) {
-                                list = state.boards ?? [];
-                                /*  list.add(Board(id: 0, title: "", tasks: []));*/
-                                editingController = [];
-                                editingController = List.generate(
-                                    (state.boards?.length ?? 0) /*+ 1*/,
-                                        (index) => TextEditingController());
-                                focusTask = List.generate(
-                                    (state.boards?.length ?? 0) /* + 1*/,
-                                        (index) => false);
-                                listScroll = List.generate(
-                                    (state.boards?.length ?? 0) /*+ 1*/,
-                                        (index) => ScrollController());
-                                flag = List.generate(
-                                    (state.boards?.length ?? 0) /*+ 1*/,
-                                        (index) => false);
-                                dataL = List.generate(
-                                    (state.boards?.length ?? 0) /*+ 1*/,
-                                        (index) => Task(
-                                        id: 1000 + index,
-                                        description: editingController[index].text,
-                                        users: [],
-                                        createdAt: DateTime.now().toString()));
-                                focusNew = false;
-                                editingControllerForDescription.text = '';
-                              } else {
-                                list = [];
-                                editingController = [];
-                                focusTask = [];
-                                listScroll = [];
-                                flag = [];
-                                dataL = [];
-                                _isAddboardEnd = false;
-                                focusNew = false;
-                                editingControllerForDescription.text = '';
-                              }
-
-                              if (state.isAddNewOrUpdateTask == ActionStatus.hide) {
-                                selectedItems = [];
-                                selectedUser = [];
-                                _isAddboardEnd = false;
-                                editingControllerForDescription.text = '';
-                                editingControllerForAddBoard.text = '';
-                                SchedulerBinding.instance.addPostFrameCallback((_) {
-                                  Navigator.pop(context);
-                                  if (FocusScope.of(context).isFirstFocus) {
-                                    FocusScope.of(context)
-                                        .requestFocus(new FocusNode());
-                                  }
-                                });
-                              }
-                            },
-                            child: BlocBuilder<BoardBloc, BoardState>(
-                              builder: (context, state) {
-                                switch (state.operationStatus) {
-                                  case OperationStatus.initial:
-                                    return Center(
-                                      child: CircularProgressIndicator(),
-                                    );
-                                  case OperationStatus.failure:
-                                    return ErrorView(
-                                      onRetryPressed: () {
-                                        context.read<BoardBloc>().add(BoardStarted());
-                                      },
-                                      buttonText: "Retry",
-                                      errorMessage: "Something went wrong",
-                                      key: Key("1"),
-                                    );
-                                  case OperationStatus.success:
-                                  case OperationStatus.loading:
-                                    return Stack(
-                                      children: [
-                                        ListView.builder(
-                                          controller: scrollController,
-                                          physics: BouncingScrollPhysics(),
-                                          shrinkWrap: true,
-                                          key: listViewKey,
-                                          scrollDirection: Axis.horizontal,
-                                          padding: EdgeInsets.symmetric(vertical: 32),
-                                          itemCount: (state.boards?.length ?? 0) + 1,
-                                          itemBuilder: (context, index) {
-                                            return (index > list.length - 1 /*-2*/)
-                                                ? Column(
-                                              children: [
-                                                Container(
-                                                  decoration: BoxDecoration(
-                                                      borderRadius:
-                                                      BorderRadius.circular(
-                                                          16),
-                                                      color: Color(
-                                                          0xFFE2E4E9) /*Colors.white,*/),
-                                                  width: MediaQuery.of(context)
-                                                      .size
-                                                      .width >
-                                                      750
-                                                      ? MediaQuery.of(context)
-                                                      .size
-                                                      .width /
-                                                      5
-                                                      : MediaQuery.of(context)
-                                                      .size
-                                                      .width >
-                                                      500
-                                                      ? MediaQuery.of(context)
-                                                      .size
-                                                      .width /
-                                                      2
-                                                      : MediaQuery.of(context)
-                                                      .size
-                                                      .width *
-                                                      0.75,
-                                                  margin: EdgeInsets.symmetric(
-                                                      horizontal: 16),
-                                                  padding: EdgeInsets.symmetric(
-                                                      horizontal: 16),
-                                                  child: Padding(
-                                                    padding: EdgeInsets.only(
-                                                        left: 16,
-                                                        right: 24,
-                                                        top: 16,
-                                                        bottom: 16),
-                                                    child: Column(
-                                                      crossAxisAlignment:
-                                                      CrossAxisAlignment
-                                                          .start,
-                                                      mainAxisSize:
-                                                      MainAxisSize.min,
-                                                      children: [
-                                                        FocusScope(
-                                                          onFocusChange: (value) {
-                                                            setState(() {
-                                                              focusNew = value;
-                                                            });
-                                                          },
-                                                          child: TextField(
-                                                            controller:
-                                                            editingControllerForDescription,
-                                                            onSubmitted: (value) {
-                                                              if (editingControllerForDescription
-                                                                  .text
-                                                                  .isNotEmpty) {
-                                                                focusNew = false;
-                                                                context
-                                                                    .read<
-                                                                    BoardBloc>()
-                                                                    .add(AddBoardEvent(
-                                                                    editingControllerForDescription
-                                                                        .text,
-                                                                    "",
-                                                                    _isAddboardEnd));
-                                                                editingControllerForDescription
-                                                                    .text = '';
+                      if (state.isAddNewOrUpdateTask == ActionStatus.hide) {
+                        selectedItems = [];
+                        selectedUser = [];
+                        _isAddboardEnd = false;
+                        editingControllerForDescription.text = '';
+                        editingControllerForAddBoard.text = '';
+                        SchedulerBinding.instance.addPostFrameCallback((_) {
+                          Navigator.pop(context);
+                          if (FocusScope.of(context).isFirstFocus) {
+                            FocusScope.of(context)
+                                .requestFocus(new FocusNode());
+                          }
+                        });
+                      }
+                    },
+                    child: BlocBuilder<BoardBloc, BoardState>(
+                      builder: (context, state) {
+                        switch (state.operationStatus) {
+                          case OperationStatus.initial:
+                            return Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          case OperationStatus.failure:
+                            return ErrorView(
+                              onRetryPressed: () {
+                                context.read<BoardBloc>().add(BoardStarted());
+                              },
+                              buttonText: "Retry",
+                              errorMessage: "Something went wrong",
+                              key: Key("1"),
+                            );
+                          case OperationStatus.success:
+                          case OperationStatus.loading:
+                            return Stack(
+                              children: [
+                                ListView.builder(
+                                  controller: scrollController,
+                                  physics: BouncingScrollPhysics(),
+                                  shrinkWrap: true,
+                                  key: listViewKey,
+                                  scrollDirection: Axis.horizontal,
+                                  padding: EdgeInsets.symmetric(vertical: 32),
+                                  itemCount: (state.boards?.length ?? 0) + 1,
+                                  itemBuilder: (context, index) {
+                                    return (index > list.length - 1 /*-2*/)
+                                        ? Column(
+                                            children: [
+                                              Container(
+                                                decoration: BoxDecoration(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            16),
+                                                    color: Color(
+                                                        0xFFE2E4E9) /*Colors.white,*/),
+                                                width: MediaQuery.of(context)
+                                                            .size
+                                                            .width >
+                                                        750
+                                                    ? MediaQuery.of(context)
+                                                            .size
+                                                            .width /
+                                                        5
+                                                    : MediaQuery.of(context)
+                                                                .size
+                                                                .width >
+                                                            500
+                                                        ? MediaQuery.of(context)
+                                                                .size
+                                                                .width /
+                                                            2
+                                                        : MediaQuery.of(context)
+                                                                .size
+                                                                .width *
+                                                            0.75,
+                                                margin: EdgeInsets.symmetric(
+                                                    horizontal: 16),
+                                                padding: EdgeInsets.symmetric(
+                                                    horizontal: 16),
+                                                child: Padding(
+                                                  padding: EdgeInsets.only(
+                                                      left: 16,
+                                                      right: 24,
+                                                      top: 16,
+                                                      bottom: 16),
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    children: [
+                                                      FocusScope(
+                                                        onFocusChange: (value) {
+                                                          setState(() {
+                                                            focusNew = value;
+                                                          });
+                                                        },
+                                                        child: TextField(
+                                                          controller:
+                                                              editingControllerForDescription,
+                                                          onSubmitted: (value) {
+                                                            if (editingControllerForDescription
+                                                                .text
+                                                                .isNotEmpty) {
+                                                              focusNew = false;
+                                                              if (FocusScope.of(context).isFirstFocus) {
+                                                                FocusScope.of(context)
+                                                                    .requestFocus(new FocusNode());
+                                                              }
+                                                              context
+                                                                  .read<
+                                                                      BoardBloc>()
+                                                                  .add(AddBoardEvent(
+                                                                      editingControllerForDescription
+                                                                          .text,
+                                                                      "",
+                                                                      _isAddboardEnd));
+                                                              editingControllerForDescription
+                                                                  .text = '';
 
 /*
   setState(() {
@@ -312,125 +316,121 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                                                                 editingControllerNew
                                                                     .text = '';
                                                               });*/
-                                                              }
-                                                              if (FocusScope.of(
-                                                                  context)
-                                                                  .isFirstFocus) {
-                                                                FocusScope.of(
-                                                                    context)
-                                                                    .requestFocus(
-                                                                    new FocusNode());
-                                                              }
-                                                            },
-                                                            decoration:
-                                                            InputDecoration(
-                                                              labelStyle: TextStyle(
-                                                                  fontFamily:
-                                                                  'Poppins'),
-                                                              contentPadding:
-                                                              EdgeInsets.only(
-                                                                  left: 8,
-                                                                  top: 16,
-                                                                  bottom: 8),
-                                                              filled: true,
-                                                              fillColor: Colors
-                                                                  .transparent,
-                                                              labelText:
-                                                              "Add Board",
-                                                              border:
-                                                              new OutlineInputBorder(
-                                                                borderSide:
-                                                                new BorderSide(
-                                                                    color: Color(
-                                                                        0xFF799681)),
-                                                                borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                    8),
-                                                                gapPadding: 4.0,
-                                                              ),
-                                                              enabledBorder:
-                                                              OutlineInputBorder(
-                                                                borderSide: BorderSide(
-                                                                    color: Color(
-                                                                        0xFF799681)),
-                                                                borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                    8),
-                                                              ),
-                                                              focusedBorder:
-                                                              OutlineInputBorder(
-                                                                borderSide:
-                                                                BorderSide(
-                                                                    color: Colors
-                                                                        .blue),
-                                                                //Color(0xFF256B3B)
-                                                                borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                    8),
-                                                              ),
-                                                              prefixIcon: Icon(
-                                                                  Icons.add,
-                                                                  size: 24),
+                                                            }
+                                                          },
+                                                          decoration:
+                                                              InputDecoration(
+                                                            labelStyle: TextStyle(
+                                                                fontFamily:
+                                                                    'Poppins'),
+                                                            contentPadding:
+                                                                EdgeInsets.only(
+                                                                    left: 8,
+                                                                    top: 16,
+                                                                    bottom: 8),
+                                                            filled: true,
+                                                            fillColor: Colors
+                                                                .transparent,
+                                                            labelText:
+                                                                "Add Board",
+                                                            border:
+                                                                new OutlineInputBorder(
+                                                              borderSide:
+                                                                  new BorderSide(
+                                                                      color: Color(
+                                                                          0xFF799681)),
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          8),
+                                                              gapPadding: 4.0,
                                                             ),
+                                                            enabledBorder:
+                                                                OutlineInputBorder(
+                                                              borderSide: BorderSide(
+                                                                  color: Color(
+                                                                      0xFF799681)),
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          8),
+                                                            ),
+                                                            focusedBorder:
+                                                                OutlineInputBorder(
+                                                              borderSide:
+                                                                  BorderSide(
+                                                                      color: Colors
+                                                                          .blue),
+                                                              //Color(0xFF256B3B)
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          8),
+                                                            ),
+                                                            prefixIcon: Icon(
+                                                                Icons.add,
+                                                                size: 24),
                                                           ),
                                                         ),
-                                                        if (focusNew)
-                                                          SizedBox(
-                                                            height: 16,
-                                                          ),
-                                                        if (focusNew)
-                                                          Column(
-                                                            children: [
-                                                              InkWell(
-                                                                onTap: () {
-                                                                  setState(() {
-                                                                    _isAddboardEnd =
-                                                                    !_isAddboardEnd;
-                                                                  });
-                                                                },
-                                                                child: Row(
-                                                                  children: [
-                                                                    _isAddboardEnd
-                                                                        ? const Icon(
-                                                                        Icons
-                                                                            .check_box_outlined)
-                                                                        : const Icon(
-                                                                        Icons
-                                                                            .check_box_outline_blank),
-                                                                    Text(
-                                                                      "Final status board"
-                                                                          .toString(),
-                                                                      style:
-                                                                      const TextStyle(
-                                                                        fontSize:
-                                                                        14,
-                                                                      ),
+                                                      ),
+                                                      if (focusNew)
+                                                        SizedBox(
+                                                          height: 16,
+                                                        ),
+                                                      if (focusNew)
+                                                        Column(
+                                                          children: [
+                                                            InkWell(
+                                                              onTap: () {
+                                                                setState(() {
+                                                                  _isAddboardEnd =
+                                                                      !_isAddboardEnd;
+                                                                });
+                                                              },
+                                                              child: Row(
+                                                                children: [
+                                                                  _isAddboardEnd
+                                                                      ? const Icon(
+                                                                          Icons
+                                                                              .check_box_outlined)
+                                                                      : const Icon(
+                                                                          Icons
+                                                                              .check_box_outline_blank),
+                                                                  Text(
+                                                                    "Final status board"
+                                                                        .toString(),
+                                                                    style:
+                                                                        const TextStyle(
+                                                                      fontSize:
+                                                                          14,
                                                                     ),
-                                                                  ],
-                                                                ),
+                                                                  ),
+                                                                ],
                                                               ),
-                                                              SizedBox(
-                                                                height: 16,
-                                                              ),
-                                                              FilledButton(
-                                                                  style: ButtonStyle(
-                                                                      backgroundColor:
-                                                                      MaterialStateProperty.all(
-                                                                          Colors.green)),
-                                                                  onPressed: () {
-                                                                    if (editingControllerForDescription
-                                                                        .text
-                                                                        .isNotEmpty) {
-                                                                      context
-                                                                          .read<
-                                                                          BoardBloc>()
-                                                                          .add(AddBoardEvent(
-                                                                          editingControllerForDescription.text,
-                                                                          "",
-                                                                          _isAddboardEnd));
+                                                            ),
+                                                            SizedBox(
+                                                              height: 16,
+                                                            ),
+                                                            FilledButton(
+                                                                style: ButtonStyle(
+                                                                    backgroundColor:
+                                                                        MaterialStateProperty.all(
+                                                                            Colors.green)),
+                                                                onPressed: () {
+                                                                  if (FocusScope.of(context).isFirstFocus) {
+                                                                    FocusScope.of(context)
+                                                                        .requestFocus(new FocusNode());
+                                                                  }
+                                                                  if (editingControllerForDescription
+                                                                      .text
+                                                                      .isNotEmpty) {
+                                                                    context
+                                                                        .read<
+                                                                            BoardBloc>()
+                                                                        .add(AddBoardEvent(
+                                                                            editingControllerForDescription.text,
+                                                                            "",
+                                                                            _isAddboardEnd));
 /*                                                            setState(() {
                                                                       state.boards?.add(Board(
                                                                           title:
@@ -465,96 +465,96 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                                                                           TextEditingController());
                                                                       flag.add(false);
                                                                     });*/
-                                                                    }
-                                                                    setState(() {
-                                                                      focusNew =
-                                                                      false;
-                                                                      editingControllerForDescription
-                                                                          .text = '';
-                                                                    });
-                                                                  },
-                                                                  child: Text(
-                                                                    "Add Board",
-                                                                    style:
-                                                                    TextStyle(),
-                                                                  )),
-                                                            ],
-                                                          )
-                                                      ],
-                                                    ),
+                                                                  }
+                                                                  setState(() {
+                                                                    focusNew =
+                                                                        false;
+                                                                    editingControllerForDescription
+                                                                        .text = '';
+                                                                  });
+                                                                },
+                                                                child: Text(
+                                                                  "Add Board",
+                                                                  style:
+                                                                      TextStyle(),
+                                                                )),
+                                                          ],
+                                                        )
+                                                    ],
                                                   ),
                                                 ),
-                                              ],
-                                            )
-                                                : buildBoards(index, context, state);
-                                          },
-                                        ),
-                                        if (state.operationStatus ==
-                                            OperationStatus.loading)
-                                          Opacity(
-                                            opacity: 0.5,
-                                            child: Scaffold(),
-                                          ),
-                                        if (state.operationStatus ==
-                                            OperationStatus.loading)
-                                          Center(
-                                            child: CircularProgressIndicator(),
-                                          ),
-                                      ],
-                                    );
-                                  default:
-                                    return Container();
-                                }
-                              },
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                                              ),
+                                            ],
+                                          )
+                                        : buildBoards(index, context, state);
+                                  },
+                                ),
+                                if (state.operationStatus ==
+                                    OperationStatus.loading)
+                                  Opacity(
+                                    opacity: 0.5,
+                                    child: Scaffold(),
+                                  ),
+                                if (state.operationStatus ==
+                                    OperationStatus.loading)
+                                  Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                              ],
+                            );
+                          default:
+                            return Container();
+                        }
+                      },
+                    ),
                   ),
                 ),
-                Positioned(
-                    bottom: 10,
-                    right: 10,
-                    child: BlocConsumer<BoardBloc, BoardState>(
-                      listenWhen: (previous, current) {
-                        if (previous.generalLoaderAtBottom != ActionStatus.normal &&
-                            current.message.isNotEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text("${current.message}")));
-                          return true;
-                        }
-                        return false;
+              ),
+            ],
+          ),
+        ),
+        Positioned(
+            bottom: 10,
+            right: 10,
+            child: BlocConsumer<BoardBloc, BoardState>(
+              listenWhen: (previous, current) {
+                if (previous.generalLoaderAtBottom != ActionStatus.normal &&
+                    current.message.isNotEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("${current.message}")));
+                  return true;
+                }
+                return false;
+              },
+              listener: (context, state) {},
+              builder: (context, state) {
+                if (state.generalLoaderAtBottom == ActionStatus.loading)
+                  return CircularProgressIndicator(
+                    color: Colors.green,
+                  );
+                return Row(
+                  children: [
+                    IconButton(
+                        color: Colors.green,
+                        icon: Icon(Icons.refresh),
+                        iconSize: 30,
+                        onPressed: () {
+                          context.read<BoardBloc>().add(BoardStarted());
+                        }),
+                    FilledButton(
+                      onPressed: () {
+                        context.read<BoardBloc>().add(ExportTaskEvent());
                       },
-                      listener: (context, state) {},
-                      builder: (context, state) {
-                        if (state.generalLoaderAtBottom == ActionStatus.loading)
-                          return CircularProgressIndicator(
-                            color: Colors.green,
-                          );
-                        return Row(
-                          children: [
-                            IconButton(
-                                color: Colors.green,
-                                icon: Icon(Icons.refresh),
-                                iconSize: 30,
-                                onPressed: () {
-                                  context.read<BoardBloc>().add(BoardStarted());
-                                }),
-                            FilledButton(
-                              onPressed: () {
-                                context.read<BoardBloc>().add(ExportTaskEvent());
-                              },
-                              child: Text(
-                                "Export Csv",
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    ))
-              ],
-            )));
+                      child: Text(
+                        "Export Csv",
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ))
+      ],
+    )));
   }
 
   List<Tag> selectedItems = [];
@@ -586,8 +586,8 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                   width: MediaQuery.of(context).size.width > 750
                       ? MediaQuery.of(context).size.width / 5
                       : MediaQuery.of(context).size.width > 500
-                      ? MediaQuery.of(context).size.width / 2
-                      : MediaQuery.of(context).size.width * 0.75,
+                          ? MediaQuery.of(context).size.width / 2
+                          : MediaQuery.of(context).size.width * 0.75,
                   margin: EdgeInsets.symmetric(horizontal: 16),
                   padding: EdgeInsets.symmetric(horizontal: 16),
                   child: Column(
@@ -617,113 +617,113 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                         shrinkWrap: true,
                         itemBuilder: (BuildContext context, int childIndex) {
                           return childIndex <
-                              (list[index].taskIds?.length ?? 0) + 1 &&
-                              childIndex > 0
+                                      (list[index].taskIds?.length ?? 0) + 1 &&
+                                  childIndex > 0
                               ? DragTarget(
-                            builder:
-                                (context, candidateData, rejectedData) {
-                              return Draggable<Task>(
-                                data:
-                                list[index].taskIds?[childIndex - 1],
-                                onDragStarted: () => isDragging = true,
-                                onDragCompleted: () => isDragging = false,
-                                onDragEnd: (details) =>
-                                isDragging = false,
-                                feedback: Card(
-                                  child: Container(
-                                    color: Colors.amberAccent,
-                                    width: 400 - 64,
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: buildDraggableWidget(
-                                        index, childIndex),
-                                  ),
-                                ),
-                                childWhenDragging: Column(
-                                  children: [
-                                    Card(
-                                      child: Container(
-                                        width: 300,
-                                        color: Colors.grey,
-                                        padding:
-                                        const EdgeInsets.all(8.0),
-                                        child: buildDraggableWidget(
-                                            index, childIndex),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                child: Column(
-                                  children: [
-                                    InkWell(
-                                      onTap: () {
-                                        if (FocusScope.of(context)
-                                            .isFirstFocus) {
-                                          FocusScope.of(context)
-                                              .requestFocus(
-                                              new FocusNode());
-                                        }
-                                        editingControllerForDescription
-                                            .text = list[index]
-                                            .taskIds?[childIndex - 1]
-                                            ?.description ??
-                                            "";
-                                        editingController[index]
-                                            .text = list[index]
-                                            .taskIds?[childIndex - 1]
-                                            ?.name ??
-                                            "";
-                                        selectedUser = list[index]
-                                            .taskIds?[childIndex - 1]
-                                            ?.users ??
-                                            [];
-                                        selectedItems = list[index]
-                                            .taskIds?[childIndex - 1]
-                                            ?.tags ??
-                                            [];
-                                        buildShowDialogForEdit(context,
-                                            index, childIndex - 1)
-                                            .then((value) {
-                                          editingControllerForDescription
-                                              .text = "";
-                                          editingController[index].text =
-                                          "";
-                                          selectedUser = [];
-                                          selectedItems = [];
-                                        });
-                                      },
-                                      child: Card(
-                                        margin: EdgeInsets.only(
-                                            left: 8,
-                                            right: 24,
-                                            bottom: 8,
-                                            top: 8),
-                                        color: Colors.white,
+                                  builder:
+                                      (context, candidateData, rejectedData) {
+                                    return Draggable<Task>(
+                                      data:
+                                          list[index].taskIds?[childIndex - 1],
+                                      onDragStarted: () => isDragging = true,
+                                      onDragCompleted: () => isDragging = false,
+                                      onDragEnd: (details) =>
+                                          isDragging = false,
+                                      feedback: Card(
                                         child: Container(
-                                          width: totalSize,
-                                          padding:
-                                          const EdgeInsets.all(8.0),
+                                          color: Colors.amberAccent,
+                                          width: 400 - 64,
+                                          padding: const EdgeInsets.all(8.0),
                                           child: buildDraggableWidget(
                                               index, childIndex),
                                         ),
                                       ),
-                                    ),
-                                    if (flag[index] &&
-                                        childIndex == selectedIndex)
-                                      Card(
-                                        color: Colors.lightBlue[200],
-                                        child: Container(
-                                          width: 300,
-                                          //double.infinity,
-                                          padding:
-                                          const EdgeInsets.all(8.0),
-                                          child: Column(
-                                            crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                            children: [
-                                              buildDraggableWidgetForDragTarget(
-                                                  index,
-                                                  dataL?.elementAt(index))
-                                              /*SingleChildScrollView(
+                                      childWhenDragging: Column(
+                                        children: [
+                                          Card(
+                                            child: Container(
+                                              width: 300,
+                                              color: Colors.grey,
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: buildDraggableWidget(
+                                                  index, childIndex),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          InkWell(
+                                            onTap: () {
+                                              if (FocusScope.of(context)
+                                                  .isFirstFocus) {
+                                                FocusScope.of(context)
+                                                    .requestFocus(
+                                                        new FocusNode());
+                                              }
+                                              editingControllerForDescription
+                                                  .text = list[index]
+                                                      .taskIds?[childIndex - 1]
+                                                      ?.description ??
+                                                  "";
+                                              editingController[index]
+                                                  .text = list[index]
+                                                      .taskIds?[childIndex - 1]
+                                                      ?.name ??
+                                                  "";
+                                              selectedUser = list[index]
+                                                      .taskIds?[childIndex - 1]
+                                                      ?.users ??
+                                                  [];
+                                              selectedItems = list[index]
+                                                      .taskIds?[childIndex - 1]
+                                                      ?.tags ??
+                                                  [];
+                                              buildShowDialogForEdit(context,
+                                                      index, childIndex - 1)
+                                                  .then((value) {
+                                                editingControllerForDescription
+                                                    .text = "";
+                                                editingController[index].text =
+                                                    "";
+                                                selectedUser = [];
+                                                selectedItems = [];
+                                              });
+                                            },
+                                            child: Card(
+                                              margin: EdgeInsets.only(
+                                                  left: 8,
+                                                  right: 24,
+                                                  bottom: 8,
+                                                  top: 8),
+                                              color: Colors.white,
+                                              child: Container(
+                                                width: totalSize,
+                                                padding:
+                                                    const EdgeInsets.all(8.0),
+                                                child: buildDraggableWidget(
+                                                    index, childIndex),
+                                              ),
+                                            ),
+                                          ),
+                                          if (flag[index] &&
+                                              childIndex == selectedIndex)
+                                            Card(
+                                              color: Colors.lightBlue[200],
+                                              child: Container(
+                                                width: 300,
+                                                //double.infinity,
+                                                padding:
+                                                    const EdgeInsets.all(8.0),
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    buildDraggableWidgetForDragTarget(
+                                                        index,
+                                                        dataL?.elementAt(index))
+                                                    /*SingleChildScrollView(
                                                       child: Container(
                                                         alignment: Alignment
                                                             .centerLeft,
@@ -783,90 +783,94 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                                                             fontSize: 20),
                                                       ),
                                                     ),*/
-                                            ],
-                                          ),
-                                        ),
-                                      )
-                                  ],
-                                ),
-                              );
-                            },
-                            onAccept: (data) {
-                              int newBoardIndex =
-                                  list[index].id?.toInt() ?? -1;
-                              int oldBoardIndex = newBoardIndex;
-                              setState(() {
-                                if (list[index].taskIds?.contains(data) ??
-                                    false) {
-                                  list[index].taskIds?.remove(data);
-                                  list[index]
-                                      .taskIds
-                                      ?.insert(childIndex, data as Task);
-                                } else {
-                                  list[index]
-                                      .taskIds
-                                      ?.insert(childIndex, data as Task);
-                                  for (int i = 0; i < list.length; i++) {
-                                    if (i != index &&
-                                        (list[i].taskIds?.indexOf(
-                                            data as Task?) ??
-                                            0) >
-                                            -1) {
-                                      oldBoardIndex =
-                                          list[i].id?.toInt() ?? -1;
-                                      list[i].taskIds?.remove(data);
-                                      break;
-                                    }
-                                  }
-                                }
-                              });
-                              setState(() {
-                                flag[index] = false;
-                                selectedIndex = -1;
-                              });
-                              context.read<BoardBloc>().add(MoveTaskEvent(
-                                  moveToBoardId: newBoardIndex,
-                                  taskId: (data as Task).id?.toInt() ?? 0,
-                                  boardId: oldBoardIndex));
-                            },
-                            onLeave: (data) {
-                              setState(() {
-                                flag[index] = false;
-                              });
-                            },
-                            onWillAccept: (data) {
-                              setState(() {
-                                flag[index] = true;
-                                // dataL[index] =
-                                //     data;
-                                dataL?.insert(index, data as Task);
-                                selectedIndex = childIndex;
-                              });
-                              return true;
-                            },
-                          )
+                                                  ],
+                                                ),
+                                              ),
+                                            )
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                  onAccept: (data) {
+                                    int newBoardIndex =
+                                        list[index].id?.toInt() ?? -1;
+                                    int oldBoardIndex = newBoardIndex;
+                                    setState(() {
+                                      (data as Task).endTime =
+                                          DateFormat("yyyy-MM-dd HH:mm:ss")
+                                              .format(DateTime.now());
+                                      if (list[index].taskIds?.contains(data) ??
+                                          false) {
+                                        list[index].taskIds?.remove(data);
+                                        list[index]
+                                            .taskIds
+                                            ?.insert(childIndex, data as Task);
+                                      } else {
+                                        list[index]
+                                            .taskIds
+                                            ?.insert(childIndex, data as Task);
+                                        for (int i = 0; i < list.length; i++) {
+                                          if (i != index &&
+                                              (list[i].taskIds?.indexOf(
+                                                          data as Task?) ??
+                                                      0) >
+                                                  -1) {
+                                            oldBoardIndex =
+                                                list[i].id?.toInt() ?? -1;
+                                            list[i].taskIds?.remove(data);
+                                            break;
+                                          }
+                                        }
+                                      }
+                                    });
+                                    setState(() {
+                                      flag[index] = false;
+                                      selectedIndex = -1;
+                                    });
+
+                                    context.read<BoardBloc>().add(MoveTaskEvent(
+                                        moveToBoardId: newBoardIndex,
+                                        taskId: (data as Task).id?.toInt() ?? 0,
+                                        boardId: oldBoardIndex));
+                                  },
+                                  onLeave: (data) {
+                                    setState(() {
+                                      flag[index] = false;
+                                    });
+                                  },
+                                  onWillAccept: (data) {
+                                    setState(() {
+                                      flag[index] = true;
+                                      // dataL[index] =
+                                      //     data;
+                                      dataL?.insert(index, data as Task);
+                                      selectedIndex = childIndex;
+                                    });
+                                    return true;
+                                  },
+                                )
                               : DragTarget(
-                            builder:
-                                (context, candidateData, rejectedData) {
-                              return Column(
-                                children: [
-                                  Container(
-                                    height: 20,
-                                  ),
-                                  if (flag[index] &&
-                                      childIndex == selectedIndex)
-                                    Card(
-                                      color: Colors.lightBlue[200],
-                                      child: Container(
-                                        width: 300,
-                                        //double.infinity,
-                                        padding:
-                                        const EdgeInsets.all(8.0),
-                                        child: Column(
-                                          children: [
-                                            buildDraggableWidgetForDragTarget(
-                                                index,
-                                                dataL?.elementAt(index)),
+                                  builder:
+                                      (context, candidateData, rejectedData) {
+                                    return Column(
+                                      children: [
+                                        Container(
+                                          height: 20,
+                                        ),
+                                        if (flag[index] &&
+                                            childIndex == selectedIndex)
+                                          Card(
+                                            color: Colors.lightBlue[200],
+                                            child: Container(
+                                              width: 300,
+                                              //double.infinity,
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: Column(
+                                                children: [
+                                                  buildDraggableWidgetForDragTarget(
+                                                      index,
+                                                      dataL?.elementAt(index)),
 /*                                                  Text(
                                                     dataL
                                                             ?.elementAt(index)
@@ -875,68 +879,71 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                                                     style:
                                                         TextStyle(fontSize: 20),
                                                   ),*/
-                                          ],
-                                        ),
-                                      ),
-                                    )
-                                ],
-                              );
-                            },
-                            onAccept: (data) {
-                              int newBoardIndex =
-                                  list[index].id?.toInt() ?? -1;
-                              int oldBoardIndex = newBoardIndex;
-                              setState(() {
-                                if (list[index].taskIds?.contains(data) ??
-                                    false) {
-                                  list[index].taskIds?.remove(data);
-                                  list[index]
-                                      .taskIds
-                                      ?.insert(childIndex, data as Task);
-                                } else {
-                                  list[index]
-                                      .taskIds
-                                      ?.insert(childIndex, data as Task);
-                                  for (int i = 0; i < list.length; i++) {
-                                    if (i != index &&
-                                        (list[i].taskIds?.indexOf(
-                                            data as Task?) ??
-                                            0) >
-                                            -1) {
-                                      oldBoardIndex =
-                                          list[i].id?.toInt() ?? -1;
-                                      list[i].taskIds?.remove(data);
+                                                ],
+                                              ),
+                                            ),
+                                          )
+                                      ],
+                                    );
+                                  },
+                                  onAccept: (data) {
+                                    int newBoardIndex =
+                                        list[index].id?.toInt() ?? -1;
+                                    int oldBoardIndex = newBoardIndex;
+                                    setState(() {
+                                      (data as Task).endTime =
+                                          DateFormat("yyyy-MM-dd HH:mm:ss")
+                                              .format(DateTime.now());
+                                      if (list[index].taskIds?.contains(data) ??
+                                          false) {
+                                        list[index].taskIds?.remove(data);
+                                        list[index]
+                                            .taskIds
+                                            ?.insert(childIndex, data as Task);
+                                      } else {
+                                        list[index]
+                                            .taskIds
+                                            ?.insert(childIndex, data as Task);
+                                        for (int i = 0; i < list.length; i++) {
+                                          if (i != index &&
+                                              (list[i].taskIds?.indexOf(
+                                                          data as Task?) ??
+                                                      0) >
+                                                  -1) {
+                                            oldBoardIndex =
+                                                list[i].id?.toInt() ?? -1;
+                                            list[i].taskIds?.remove(data);
 
-                                      break;
-                                    }
-                                  }
-                                }
-                              });
-                              setState(() {
-                                flag[index] = false;
-                                selectedIndex = -1;
-                              });
-                              context.read<BoardBloc>().add(MoveTaskEvent(
-                                  moveToBoardId: newBoardIndex,
-                                  taskId: (data as Task).id?.toInt() ?? 0,
-                                  boardId: oldBoardIndex));
-                            },
-                            onLeave: (data) {
-                              setState(() {
-                                flag[index] = false;
-                              });
-                            },
-                            onWillAccept: (data) {
-                              setState(() {
-                                flag[index] = true;
-                                /*dataL[index] =
+                                            break;
+                                          }
+                                        }
+                                      }
+                                    });
+                                    setState(() {
+                                      flag[index] = false;
+                                      selectedIndex = -1;
+                                    });
+                                    context.read<BoardBloc>().add(MoveTaskEvent(
+                                        moveToBoardId: newBoardIndex,
+                                        taskId: (data as Task).id?.toInt() ?? 0,
+                                        boardId: oldBoardIndex));
+                                  },
+                                  onLeave: (data) {
+                                    setState(() {
+                                      flag[index] = false;
+                                    });
+                                  },
+                                  onWillAccept: (data) {
+                                    setState(() {
+                                      flag[index] = true;
+                                      /*dataL[index] =
                                                                   data;*/
-                                dataL?.insert(index, data as Task);
-                                selectedIndex = childIndex;
-                              });
-                              return true;
-                            },
-                          );
+                                      dataL?.insert(index, data as Task);
+                                      selectedIndex = childIndex;
+                                    });
+                                    return true;
+                                  },
+                                );
                         },
                         /* separatorBuilder: (context, index) =>
                                                                 Container(height: 20),*/
@@ -1051,7 +1058,7 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                                   ),
                                   enabledBorder: OutlineInputBorder(
                                     borderSide:
-                                    BorderSide(color: Color(0xFF799681)),
+                                        BorderSide(color: Color(0xFF799681)),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   focusedBorder: OutlineInputBorder(
@@ -1074,9 +1081,13 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                               FilledButton(
                                   style: ButtonStyle(
                                       backgroundColor:
-                                      MaterialStateProperty.all(
-                                          Colors.green)),
+                                          MaterialStateProperty.all(
+                                              Colors.green)),
                                   onPressed: () {
+                                    if (FocusScope.of(context).isFirstFocus) {
+                                      FocusScope.of(context)
+                                          .requestFocus(new FocusNode());
+                                    }
                                     if (editingController[index]
                                         .text
                                         .isNotEmpty) {
@@ -1139,22 +1150,22 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
               children: [
                 ...?task?.tags
                     ?.map((e) => Container(
-                  decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(4.0),
-                      border: Border.all(
-                          color: ColorUtil.btnColorMap[e.color] ??
-                              Colors.grey)),
-                  padding: EdgeInsets.all(4),
-                  margin:
-                  EdgeInsets.symmetric(vertical: 2, horizontal: 8),
-                  child: Text(
-                    '${e.name}',
-                    style: TextStyle(
-                        color: ColorUtil
-                            .btnColorMap[e.color]), //Colors.black),//
-                  ),
-                ))
+                          decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(4.0),
+                              border: Border.all(
+                                  color: ColorUtil.btnColorMap[e.color] ??
+                                      Colors.grey)),
+                          padding: EdgeInsets.all(4),
+                          margin:
+                              EdgeInsets.symmetric(vertical: 2, horizontal: 8),
+                          child: Text(
+                            '${e.name}',
+                            style: TextStyle(
+                                color: ColorUtil
+                                    .btnColorMap[e.color]), //Colors.black),//
+                          ),
+                        ))
                     .toList()
               ],
             ),
@@ -1180,19 +1191,21 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
               children: [
                 ...?task?.users
                     ?.map((e) => NameIcon(
-                  firstName: e.name ?? "-",
-                  backgroundColor: Colors.white,
-                  textColor: Colors.orange,
-                ))
+                          firstName: e.name ?? "-",
+                          backgroundColor: Colors.white,
+                          textColor: Colors.orange,
+                        ))
                     .toList()
               ],
             ),
           ),
         ),
-        if ((list[index].isEnd ?? false) &&
+/*        if ((list[index].isEnd ?? false) &&
             ((task?.endTime?.isNotEmpty ?? true) &&
                 !(task?.endTime?.contains('[a-zA-Z]') ?? true) &&
                 (task?.createdAt?.isNotEmpty ?? false)))
+          */
+        if (list[index].isEnd ?? false)
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1208,15 +1221,15 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                         new TextSpan(text: 'Total time: '),
                         new TextSpan(
                             text: (task?.endTime != null &&
-                                task?.createdAt != null)
+                                    task?.createdAt != null)
                                 ? StringUtils.timeDifference(
-                                DateFormat("yyyy-MM-dd HH:mm:ss")
-                                    .parse(task?.createdAt ?? ""),
-                                task?.endTime != null &&
-                                    (task?.endTime?.isNotEmpty ?? false)
-                                    ? DateFormat("yyyy-MM-dd HH:mm:ss")
-                                    .parse(task?.endTime ?? "")
-                                    : DateTime.now())
+                                    DateFormat("yyyy-MM-dd HH:mm:ss")
+                                        .parse(task?.createdAt ?? ""),
+                                    task?.endTime != null &&
+                                            (task?.endTime?.isNotEmpty ?? false)
+                                        ? DateFormat("yyyy-MM-dd HH:mm:ss")
+                                            .parse(task?.endTime ?? "")
+                                        : DateTime.now())
                                 : "",
                             style: new TextStyle(fontWeight: FontWeight.bold)),
                       ],
@@ -1233,8 +1246,12 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                       children: <TextSpan>[
                         new TextSpan(text: 'End date: '),
                         new TextSpan(
-                            text: DateFormat("MMM dd, hh:mm a")
-                                .format(DateTime.now()),
+                            text: DateFormat("MMM dd, hh:mm a").format(
+                                (task?.endTime != null &&
+                                        (task?.endTime?.isNotEmpty ?? false))
+                                    ? (DateFormat("yyyy-MM-dd HH:mm:ss")
+                                        .parse(task?.endTime ?? ""))
+                                    : DateTime.now()),
                             style: new TextStyle(fontWeight: FontWeight.bold)),
                       ],
                     ),
@@ -1261,22 +1278,22 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                     .taskIds?[childIndex - 1]
                     ?.tags
                     ?.map((e) => Container(
-                  decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(4.0),
-                      border: Border.all(
-                          color: ColorUtil.btnColorMap[e.color] ??
-                              Colors.grey)),
-                  padding: EdgeInsets.all(4),
-                  margin:
-                  EdgeInsets.symmetric(vertical: 2, horizontal: 8),
-                  child: Text(
-                    '${e.name}',
-                    style: TextStyle(
-                        color: ColorUtil
-                            .btnColorMap[e.color]), //Colors.black),//
-                  ),
-                ))
+                          decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(4.0),
+                              border: Border.all(
+                                  color: ColorUtil.btnColorMap[e.color] ??
+                                      Colors.grey)),
+                          padding: EdgeInsets.all(4),
+                          margin:
+                              EdgeInsets.symmetric(vertical: 2, horizontal: 8),
+                          child: Text(
+                            '${e.name}',
+                            style: TextStyle(
+                                color: ColorUtil
+                                    .btnColorMap[e.color]), //Colors.black),//
+                          ),
+                        ))
                     .toList()
               ],
             ),
@@ -1304,10 +1321,10 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                     .taskIds?[childIndex - 1]
                     ?.users
                     ?.map((e) => NameIcon(
-                  firstName: e.name ?? "-",
-                  backgroundColor: Colors.white,
-                  textColor: Colors.orange,
-                ))
+                          firstName: e.name ?? "-",
+                          backgroundColor: Colors.white,
+                          textColor: Colors.orange,
+                        ))
                     .toList()
               ],
             ),
@@ -1315,11 +1332,11 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
         ),
         if ((list[index].isEnd ?? false) &&
             ((list[index].taskIds?[childIndex - 1]?.endTime?.isNotEmpty ??
-                true) &&
+                    true) &&
                 !(list[index]
-                    .taskIds?[childIndex - 1]
-                    ?.endTime
-                    ?.contains('[a-zA-Z]') ??
+                        .taskIds?[childIndex - 1]
+                        ?.endTime
+                        ?.contains('[a-zA-Z]') ??
                     true) &&
                 (list[index].taskIds?[childIndex - 1]?.createdAt?.isNotEmpty ??
                     false)))
@@ -1338,25 +1355,25 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                         new TextSpan(text: 'Total time: '),
                         new TextSpan(
                             text: (list[index].taskIds?[childIndex - 1]?.endTime !=
-                                null &&
-                                list[index].taskIds?[childIndex - 1]?.createdAt !=
-                                null)
+                                        null &&
+                                    list[index].taskIds?[childIndex - 1]?.createdAt !=
+                                        null)
                                 ? StringUtils.timeDifference(
-                                DateFormat("yyyy-MM-dd HH:mm:ss").parse(
-                                    list[index]
-                                        .taskIds?[childIndex - 1]
-                                        ?.createdAt ??
-                                        ""),
-                                list[index].taskIds?[childIndex - 1]?.endTime !=
-                                    null &&
-                                    (list[index]
-                                        .taskIds?[childIndex - 1]
-                                        ?.endTime
-                                        ?.isNotEmpty ??
-                                        false)
-                                    ? DateFormat("yyyy-MM-dd HH:mm:ss")
-                                    .parse(list[index].taskIds?[childIndex - 1]?.endTime ?? "")
-                                    : DateTime.now())
+                                    DateFormat("yyyy-MM-dd HH:mm:ss").parse(
+                                        list[index]
+                                                .taskIds?[childIndex - 1]
+                                                ?.createdAt ??
+                                            ""),
+                                    list[index].taskIds?[childIndex - 1]?.endTime !=
+                                                null &&
+                                            (list[index]
+                                                    .taskIds?[childIndex - 1]
+                                                    ?.endTime
+                                                    ?.isNotEmpty ??
+                                                false)
+                                        ? DateFormat("yyyy-MM-dd HH:mm:ss")
+                                            .parse(list[index].taskIds?[childIndex - 1]?.endTime ?? "")
+                                        : DateTime.now())
                                 : "",
                             style: new TextStyle(fontWeight: FontWeight.bold)),
                       ],
@@ -1373,8 +1390,22 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                       children: <TextSpan>[
                         new TextSpan(text: 'End date: '),
                         new TextSpan(
-                            text: DateFormat("MMM dd, hh:mm a")
-                                .format(DateTime.now()),
+                            text: DateFormat("MMM dd, hh:mm a").format(
+                                (list[index]
+                                                .taskIds?[childIndex - 1]
+                                                ?.endTime !=
+                                            null &&
+                                        (list[index]
+                                                .taskIds?[childIndex - 1]
+                                                ?.endTime
+                                                ?.isNotEmpty ??
+                                            false))
+                                    ? (DateFormat("yyyy-MM-dd HH:mm:ss").parse(
+                                        list[index]
+                                                .taskIds?[childIndex - 1]
+                                                ?.endTime ??
+                                            ""))
+                                    : DateTime.now()),
                             style: new TextStyle(fontWeight: FontWeight.bold)),
                       ],
                     ),
@@ -1441,7 +1472,7 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                                   ),
                                   enabledBorder: OutlineInputBorder(
                                     borderSide:
-                                    BorderSide(color: Color(0xFF799681)),
+                                        BorderSide(color: Color(0xFF799681)),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   focusedBorder: OutlineInputBorder(
@@ -1469,7 +1500,7 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   borderRadius:
-                                  BorderRadius.all(Radius.circular(8)),
+                                      BorderRadius.all(Radius.circular(8)),
                                   /*gradient: LinearGradient(
                                     begin: Alignment.topLeft,
                                     end: Alignment.bottomRight,
@@ -1502,12 +1533,12 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                                     ),
                                     enabledBorder: OutlineInputBorder(
                                       borderSide:
-                                      BorderSide(color: Color(0xFF799681)),
+                                          BorderSide(color: Color(0xFF799681)),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderSide:
-                                      BorderSide(color: Colors.blue),
+                                          BorderSide(color: Colors.blue),
                                       //Color(0xFF256B3B)
                                       borderRadius: BorderRadius.circular(8),
                                     ),
@@ -1528,7 +1559,7 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                                     isExpanded: true,
                                     hint: Align(
                                       alignment:
-                                      AlignmentDirectional.centerStart,
+                                          AlignmentDirectional.centerStart,
                                       child: Text(
                                         ' Select Tags',
                                         style: TextStyle(
@@ -1545,7 +1576,7 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                                         child: StatefulBuilder(
                                           builder: (context, menuSetState) {
                                             final _isSelected =
-                                            selectedItems.contains(item);
+                                                selectedItems.contains(item);
                                             return InkWell(
                                               onTap: () {
                                                 _isSelected
@@ -1559,15 +1590,15 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                                               child: Container(
                                                 height: double.infinity,
                                                 padding:
-                                                const EdgeInsets.symmetric(
-                                                    horizontal: 16.0),
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 16.0),
                                                 child: Row(
                                                   children: [
                                                     _isSelected
                                                         ? const Icon(Icons
-                                                        .check_box_outlined)
+                                                            .check_box_outlined)
                                                         : const Icon(Icons
-                                                        .check_box_outline_blank),
+                                                            .check_box_outline_blank),
                                                     Text(
                                                       item.name.toString(),
                                                       style: const TextStyle(
@@ -1617,7 +1648,7 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                                     isExpanded: true,
                                     hint: Align(
                                       alignment:
-                                      AlignmentDirectional.centerStart,
+                                          AlignmentDirectional.centerStart,
                                       child: Padding(
                                         padding: const EdgeInsets.symmetric(
                                             vertical: 8.0),
@@ -1639,7 +1670,7 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                                         child: StatefulBuilder(
                                           builder: (context, menuSetState) {
                                             final _isSelected =
-                                            selectedUser.contains(item);
+                                                selectedUser.contains(item);
                                             return InkWell(
                                               onTap: () {
                                                 _isSelected
@@ -1653,15 +1684,15 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                                               child: Container(
                                                 height: double.infinity,
                                                 padding:
-                                                const EdgeInsets.symmetric(
-                                                    horizontal: 16.0),
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 16.0),
                                                 child: Row(
                                                   children: [
                                                     _isSelected
                                                         ? const Icon(Icons
-                                                        .check_box_outlined)
+                                                            .check_box_outlined)
                                                         : const Icon(Icons
-                                                        .check_box_outline_blank),
+                                                            .check_box_outline_blank),
                                                     Text(
                                                       item.name.toString(),
                                                       style: const TextStyle(
@@ -1704,7 +1735,7 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                                   children: [
                                     Container(
                                         width:
-                                        MediaQuery.of(context).size.width,
+                                            MediaQuery.of(context).size.width,
                                         child: Container()),
                                     SizedBox(
                                       height: 12.0,
@@ -1712,26 +1743,26 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                                     FilledButton(
                                         style: ButtonStyle(
                                           backgroundColor:
-                                          MaterialStateProperty.all(
-                                              Colors.green),
+                                              MaterialStateProperty.all(
+                                                  Colors.green),
                                         ),
                                         onPressed: () {
                                           context.read<BoardBloc>().add(
                                               UpdateTaskEvent(
                                                   taskId: list[index]
-                                                      .taskIds?[childIndex]
-                                                      ?.id
-                                                      ?.toInt() ??
+                                                          .taskIds?[childIndex]
+                                                          ?.id
+                                                          ?.toInt() ??
                                                       -1,
                                                   title:
-                                                  editingController[index]
-                                                      .text,
+                                                      editingController[index]
+                                                          .text,
                                                   description:
-                                                  editingControllerForDescription
-                                                      .text,
+                                                      editingControllerForDescription
+                                                          .text,
                                                   boardId:
-                                                  list[index].id?.toInt() ??
-                                                      0,
+                                                      list[index].id?.toInt() ??
+                                                          0,
                                                   users: selectedUser,
                                                   tags: selectedItems));
                                         },
@@ -1748,7 +1779,7 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                                     padding: EdgeInsets.symmetric(vertical: 20),
                                     child: Column(
                                       mainAxisAlignment:
-                                      MainAxisAlignment.center,
+                                          MainAxisAlignment.center,
                                       children: [
                                         CircularProgressIndicator(
                                           color: Colors.green,
@@ -1828,7 +1859,7 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                                   ),
                                   enabledBorder: OutlineInputBorder(
                                     borderSide:
-                                    BorderSide(color: Color(0xFF799681)),
+                                        BorderSide(color: Color(0xFF799681)),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   focusedBorder: OutlineInputBorder(
@@ -1856,7 +1887,7 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   borderRadius:
-                                  BorderRadius.all(Radius.circular(8)),
+                                      BorderRadius.all(Radius.circular(8)),
                                   /*gradient: LinearGradient(
                                     begin: Alignment.topLeft,
                                     end: Alignment.bottomRight,
@@ -1889,12 +1920,12 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                                     ),
                                     enabledBorder: OutlineInputBorder(
                                       borderSide:
-                                      BorderSide(color: Color(0xFF799681)),
+                                          BorderSide(color: Color(0xFF799681)),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderSide:
-                                      BorderSide(color: Colors.blue),
+                                          BorderSide(color: Colors.blue),
                                       //Color(0xFF256B3B)
                                       borderRadius: BorderRadius.circular(8),
                                     ),
@@ -1915,7 +1946,7 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                                     isExpanded: true,
                                     hint: Align(
                                       alignment:
-                                      AlignmentDirectional.centerStart,
+                                          AlignmentDirectional.centerStart,
                                       child: Text(
                                         ' Select Tags',
                                         style: TextStyle(
@@ -1932,7 +1963,7 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                                         child: StatefulBuilder(
                                           builder: (context, menuSetState) {
                                             final _isSelected =
-                                            selectedItems.contains(item);
+                                                selectedItems.contains(item);
                                             return InkWell(
                                               onTap: () {
                                                 _isSelected
@@ -1946,15 +1977,15 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                                               child: Container(
                                                 height: double.infinity,
                                                 padding:
-                                                const EdgeInsets.symmetric(
-                                                    horizontal: 16.0),
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 16.0),
                                                 child: Row(
                                                   children: [
                                                     _isSelected
                                                         ? const Icon(Icons
-                                                        .check_box_outlined)
+                                                            .check_box_outlined)
                                                         : const Icon(Icons
-                                                        .check_box_outline_blank),
+                                                            .check_box_outline_blank),
                                                     Text(
                                                       item.name.toString(),
                                                       style: const TextStyle(
@@ -2004,7 +2035,7 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                                     isExpanded: true,
                                     hint: Align(
                                       alignment:
-                                      AlignmentDirectional.centerStart,
+                                          AlignmentDirectional.centerStart,
                                       child: Padding(
                                         padding: const EdgeInsets.symmetric(
                                             vertical: 8.0),
@@ -2026,7 +2057,7 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                                         child: StatefulBuilder(
                                           builder: (context, menuSetState) {
                                             final _isSelected =
-                                            selectedUser.contains(item);
+                                                selectedUser.contains(item);
                                             return InkWell(
                                               onTap: () {
                                                 _isSelected
@@ -2040,15 +2071,15 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                                               child: Container(
                                                 height: double.infinity,
                                                 padding:
-                                                const EdgeInsets.symmetric(
-                                                    horizontal: 16.0),
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 16.0),
                                                 child: Row(
                                                   children: [
                                                     _isSelected
                                                         ? const Icon(Icons
-                                                        .check_box_outlined)
+                                                            .check_box_outlined)
                                                         : const Icon(Icons
-                                                        .check_box_outline_blank),
+                                                            .check_box_outline_blank),
                                                     Text(
                                                       item.name.toString(),
                                                       style: const TextStyle(
@@ -2091,7 +2122,7 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                                   children: [
                                     Container(
                                         width:
-                                        MediaQuery.of(context).size.width,
+                                            MediaQuery.of(context).size.width,
                                         child: Container()),
                                     SizedBox(
                                       height: 12.0,
@@ -2099,21 +2130,21 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                                     FilledButton(
                                         style: ButtonStyle(
                                           backgroundColor:
-                                          MaterialStateProperty.all(
-                                              Colors.green),
+                                              MaterialStateProperty.all(
+                                                  Colors.green),
                                         ),
                                         onPressed: () {
                                           context.read<BoardBloc>().add(
                                               AddTaskEvent(
                                                   title:
-                                                  editingController[index]
-                                                      .text,
+                                                      editingController[index]
+                                                          .text,
                                                   description:
-                                                  editingControllerForDescription
-                                                      .text,
+                                                      editingControllerForDescription
+                                                          .text,
                                                   boardId:
-                                                  list[index].id?.toInt() ??
-                                                      0,
+                                                      list[index].id?.toInt() ??
+                                                          0,
                                                   users: selectedUser,
                                                   tags: selectedItems));
                                         },
@@ -2130,7 +2161,7 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                                     padding: EdgeInsets.symmetric(vertical: 20),
                                     child: Column(
                                       mainAxisAlignment:
-                                      MainAxisAlignment.center,
+                                          MainAxisAlignment.center,
                                       children: [
                                         CircularProgressIndicator(
                                           color: Colors.green,

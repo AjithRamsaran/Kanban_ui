@@ -114,7 +114,7 @@ class Export {
       "Total time spent"
     ]);
     for (Board board in boards) {
-      if (board != null && board.taskIds != null && board.id == 1) {
+      if (board != null && board.taskIds != null) {
         for (Task? task in board.taskIds ?? []) {
           List<dynamic> row = [];
           row.add((task?.id ?? 0).toString());
