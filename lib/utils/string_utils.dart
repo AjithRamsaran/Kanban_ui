@@ -5,12 +5,16 @@ class StringUtils {
     if (duration.inDays > 0) {
       str = '${duration.inDays} Days';
     }
-    if (duration.inHours > 0) {
+    if (duration.inDays <= 0 && duration.inHours > 0) {
       str = str + ' ${duration.inHours} Hours';
+    } else if (duration.inDays > 0 && duration.inHours > 0) {
+      str = str + ' ${duration.inHours % 24} Hours';
     }
-    if (duration.inDays <= 0)
+    if (duration.inDays == 0 && duration.inHours > 0) {
+      str = str + ' ${duration.inMinutes % 60} Mins';
+    } else {
       str = str + ' ${duration.inMinutes} Mins';
-
+    }
 
     return str;
   }

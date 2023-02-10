@@ -2,11 +2,9 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:flutter/cupertino.dart';
 import 'package:kanban_ui/model/GetAllBoardResponse.dart';
 import 'package:kanban_ui/model/GetAllUserResponse.dart';
 import 'package:kanban_ui/model/GetTag.dart';
-import 'package:kanban_ui/model/task_status.dart';
 import 'package:kanban_ui/networking/kanban_apis.dart';
 
 import '../model/CreateAddBoardResponse.dart';
@@ -17,7 +15,31 @@ import '../model/Users.dart';
 import '../model/tag.dart';
 import '../utils/export.dart';
 
-class KanbanRepository {
+abstract class Repository {
+  Future<List<Board>> getBoards();
+
+  Future<bool> addBoard(String name, String description, bool isEnd);
+
+  Future<bool> addTask(String title, int boardId, String description,
+      List<User> users, List<Tag> tags);
+
+  Future<bool> updateTask(int taskId, String title, int boardId,
+      String description, List<User> users, List<Tag> tags);
+
+  Future<bool> changeTaskByBoardId(
+    int taskId,
+    int boardId,
+    int moveToBoardId,
+  );
+
+  Future<String> exportFile();
+
+  Future<List<Tag>> getTags();
+
+  Future<List<User>> getUsers();
+}
+
+class KanbanRepository extends Repository {
   final KanbanApi kanbanApi;
 
   List<Board> boards = [];
@@ -55,7 +77,7 @@ class KanbanRepository {
   Future<bool> addBoard(String name, String description, bool isEnd) async {
     try {
       var response =
-      await kanbanApi.createNewBoard(1, description, name, isEnd);
+          await kanbanApi.createNewBoard(1, description, name, isEnd);
       CreateAddBoardResponse res = CreateAddBoardResponse.fromJson(response);
 
       if (res.response == "success") {
@@ -148,9 +170,11 @@ class KanbanRepository {
     }
   }
 
-  Future<bool> changeTaskByBoardId(int taskId,
-      int boardId,
-      int moveToBoardId,) async {
+  Future<bool> changeTaskByBoardId(
+    int taskId,
+    int boardId,
+    int moveToBoardId,
+  ) async {
     try {
       var response = await kanbanApi.changeTaskByBoardId(
           taskId.toString(), boardId.toString(), moveToBoardId.toString());
@@ -209,10 +233,6 @@ class KanbanRepository {
                 status: "Todo",
                 createdAt: "2023-02-06 14:23:30")))));*/
   }
-
-  Future<void> saveTasks(Task task) async {}
-
-  Future<void> deleteTask(String id) async {}
 
   Future<List<User>> getUsers() async {
     var response = await kanbanApi.getAllUsers();

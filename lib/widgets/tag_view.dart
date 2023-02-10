@@ -4,14 +4,11 @@ import 'package:kanban_ui/utils/color_util.dart';
 import '../model/Tags.dart';
 import '../model/Users.dart';
 
-typedef DeleteTag<T> = void Function(T index);
-
 class ChipView<T> extends StatefulWidget {
   ChipView(
       {required this.tags,
       this.minTagViewHeight = 0,
-      this.deletableTag = true,
-      required this.onDeleteTag,
+      this.deletableTag = false,
       required this.refreshUI})
       : assert(
             tags != null,
@@ -23,8 +20,6 @@ class ChipView<T> extends StatefulWidget {
   bool deletableTag;
 
   double minTagViewHeight;
-
-  DeleteTag<int> onDeleteTag;
 
   Function refreshUI;
 
@@ -129,7 +124,7 @@ class _ChipViewState extends State<ChipView> {
 
   void deleteTag(int index) {
     setState(() {
-      widget.refreshUI?.call();
+      widget.refreshUI.call();
       widget.tags.remove(widget.tags.elementAt(index));
     });
   }

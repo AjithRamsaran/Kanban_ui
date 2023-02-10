@@ -21,8 +21,7 @@ class Task {
       this.createdAt, 
       this.tags, 
       this.users, 
-      this.endTime, 
-      this.timeTracker, 
+      this.endTime,
       this.totalTimeSpent,});
 
   Task.fromJson(dynamic json) {
@@ -43,12 +42,7 @@ class Task {
       });
     }
     endTime = json['end_time'];
-    if (json['time_tracker'] != null) {
-      timeTracker = [];
-      json['time_tracker'].forEach((v) {
-        timeTracker?.add(TaskStatus.fromJson(v));
-      });
-    }
+
     totalTimeSpent = json['total_time_spent'];
   }
   num? id;
@@ -57,9 +51,7 @@ class Task {
   String? createdAt;
   List<Tag>? tags;
   List<User>? users;
-  String? endTime;
-  List<TaskStatus>? timeTracker;
-  num? totalTimeSpent;
+  String? endTime;num? totalTimeSpent;
 Task copyWith({  num? id,
   String? name,
   String? description,
@@ -76,7 +68,6 @@ Task copyWith({  num? id,
   tags: tags ?? this.tags,
   users: users ?? this.users,
   endTime: endTime ?? this.endTime,
-  timeTracker: timeTracker ?? this.timeTracker,
   totalTimeSpent: totalTimeSpent ?? this.totalTimeSpent,
 );
   Map<String, dynamic> toJson() {
@@ -92,9 +83,7 @@ Task copyWith({  num? id,
       map['users'] = users?.map((v) => v.toJson()).toList();
     }
     map['end_time'] = endTime;
-    if (timeTracker != null) {
-      map['time_tracker'] = timeTracker?.map((v) => v.toJson()).toList();
-    }
+
     map['total_time_spent'] = totalTimeSpent;
     return map;
   }

@@ -13,6 +13,35 @@ import 'package:http/http.dart' as http;
 
 import 'CustomException.dart';
 
+abstract class Api {
+  Future<dynamic> getOrganization();
+
+  Future<dynamic> getBoards(num organisationId);
+
+  Future<dynamic> getAllTags();
+
+  Future<dynamic> getAllUsers();
+
+  Future<dynamic> createNewBoard(
+      num organisationId, String description, String name, bool isEnd);
+
+  Future<dynamic> createNewTag();
+
+  Future<dynamic> createNewOrganisation(String name);
+
+  Future<dynamic> createNewUser(
+      String name, String title, String email, String phone, String country);
+
+  Future<dynamic> createNewTask(String name, String description, List<Tag> tags,
+      List<User> users, int boardId);
+
+  Future<dynamic> updateTask(int taskId, String name, String description,
+      List<Tag> tags, List<User> users, int boardId);
+
+  Future<dynamic> changeTaskByBoardId(
+      String taskId, String boardId, String moveToBoardId);
+}
+
 class KanbanApi {
   KanbanApi() {
     _getterBaseUrl =

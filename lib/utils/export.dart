@@ -15,7 +15,8 @@ import '../model/TaskIds.dart';
 import '../model/Users.dart';
 
 class Export {
-  static Future<String> getCsv(List<Board> boards, List<User> users, List<Tag> tags) async {
+  static Future<String> getCsv(
+      List<Board> boards, List<User> users, List<Tag> tags) async {
     var baseDir;
 
     if (Platform.isAndroid) {
@@ -42,7 +43,9 @@ class Export {
         (await getApplicationDocumentsDirectory()).absolute.path;
     var file = "$dir";
     print(" FILE " + file);
-    File f = File(directory.path + '/KanbanBoard.csv');
+    DateTime dateTime = DateTime.now();
+    String fileName = "/KanbanBoard${dateTime.millisecond}.csv";
+    File f = File(directory.path + fileName);
 // convert rows to String and write as csv file
     List<List<dynamic>> rows = <List<dynamic>>[];
 
@@ -111,7 +114,7 @@ class Export {
       "Total time spent"
     ]);
     for (Board board in boards) {
-      if (board != null && board.taskIds != null) {
+      if (board != null && board.taskIds != null && board.id == 1) {
         for (Task? task in board.taskIds ?? []) {
           List<dynamic> row = [];
           row.add((task?.id ?? 0).toString());
@@ -130,11 +133,12 @@ class Export {
 
     String csv = const ListToCsvConverter().convert(rows);
     await f.writeAsString(csv);
+
     try {
-      OpenFile.open(directory.path + '/KanbanBoard.csv');
+      OpenFile.open(directory.path + fileName);
     } catch (e) {
       print("Error : " + e.toString());
     }
-    return directory.path + '/KanbanBoard.csv';
+    return directory.path + fileName;
   }
 }

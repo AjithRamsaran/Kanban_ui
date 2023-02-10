@@ -29,7 +29,7 @@ class BoardBloc extends Bloc<BoardEvent, BoardState> {
     on<UpdateTaskEvent>(updateTask);
   }
 
-  KanbanRepository kanbanRepository;
+  Repository kanbanRepository;
 
   Future<void> getBoards(BoardStarted event, Emitter<BoardState> emit) async {
     emit(state.copyWith(status: OperationStatus.loading));
